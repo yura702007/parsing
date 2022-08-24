@@ -6,9 +6,10 @@ from settings import URL
 
 
 class ParserPage:
-    def __init__(self, link):
+    def __init__(self, category, link):
         self.url = link
         self.list_of_products = []
+        self.dict_of_products = {category: self.list_of_products}
         self.block = None
 
     def get_page(self):
@@ -47,9 +48,9 @@ class ParserPage:
 
 
 def main():
-    p = ParserPage(link='https://e-dostavka.by/catalog/7998.html')
+    p = ParserPage(category='Овощи и фрукты', link='https://e-dostavka.by/catalog/7998.html')
     p.get_page()
-    result = p.list_of_products
+    result = p.dict_of_products
     pprint(result)
 
 

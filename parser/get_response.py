@@ -6,8 +6,8 @@ def get_response(url=URL, headers=HEADERS):
     """
     Получение ответа от главной страницы сайта
     """
-    response = requests.get(url=url, headers=headers, allow_redirects=True)
-    return response
+    resp = requests.get(url=url, headers=headers, allow_redirects=True)
+    return resp
 
 
 def main():

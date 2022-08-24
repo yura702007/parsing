@@ -50,16 +50,19 @@ class ParserPage:
         Сохранение данных о товаре
         """
         cards = self.block.find_all('div', class_='form_wrapper')
-        for card in cards:
-            title = card.find('div', class_='title').text.strip()
-            price = card.find('div', class_='price').text.strip()
-            url = card.find('a', class_='fancy_ajax').get('href')
-            try:
-                country = card.find('div', class_='small_country').text.strip()
-                self.list_of_products.append(
-                    {'title': title, 'price': price, 'country': country.strip(), 'url': url})
-            except AttributeError:
-                self.list_of_products.append({'title': title, 'price': price, 'url': url})
+        try:
+            for card in cards:
+                title = card.find('div', class_='title').text.strip()
+                price = card.find('div', class_='price').text.strip()
+                url = card.find('a', class_='fancy_ajax').get('href')
+                try:
+                    country = card.find('div', class_='small_country').text.strip()
+                    self.list_of_products.append(
+                        {'title': title, 'price': price, 'country': country.strip(), 'url': url})
+                except AttributeError:
+                    self.list_of_products.append({'title': title, 'price': price, 'country': None, 'url': url})
+        except AttributeError:
+            pass
 
 
 def main():

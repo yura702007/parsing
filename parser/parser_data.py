@@ -1,45 +1,56 @@
 from pprint import pprint
 
+from get_response import get_response
 from bs4 import BeautifulSoup
-from following_links import following_links
+from settings import URL
 
 
-def get_cards():
-    for answer_dict in following_links():
-        title_category = answer_dict['title_category']
-        response = answer_dict['response']
-        html_code = response.text
-        soup = BeautifulSoup(html_code, features='lxml')
-        block_cards = soup.find('div', class_='products_block__wrapper products_4_columns vertical')
-        # if block_cards:
-        result = parse_cards(block_cards)
-        yield {title_category: result}
+class ParserPage:
+    def __init__(self, link):
+        self.url = link
+        self.list_of_products = []
+        self.block = None
 
+    def get_page(self):
+        url = self.url
+        resp = get_response(url=url)
+        self.parse_page(resp.text)
 
-def parse_cards(bs4_element):
-    list_of_products = []
-    try:
-        cards = bs4_element.find_all('div', class_='form_wrapper')
+    def parse_page(self, page_code):
+        soup = BeautifulSoup(page_code, features='lxml')
+        self.block = soup.find('div', class_='products_block__wrapper products_4_columns vertical')
+        self.parse_info()
+        more_cards = soup.find('a', class_='show_more')
+        if more_cards:
+            self.give_url(more_cards)
+        next_page = soup.find('a', class_='next_page_link')
+        if next_page:
+            self.give_url(next_page)
+
+    def give_url(self, tag):
+        link = tag.get('href').split('/')[-1]
+        self.url = URL + link
+        self.get_page()
+
+    def parse_info(self):
+        cards = self.block.find_all('div', class_='form_wrapper')
         for card in cards:
             title = card.find('div', class_='title').text.strip()
             price = card.find('div', class_='price').text.strip()
             url = card.find('a', class_='fancy_ajax').get('href')
             try:
                 country = card.find('div', class_='small_country').text.strip()
-                list_of_products.append(
+                self.list_of_products.append(
                     {'title': title, 'price': price, 'country': country.strip(), 'url': url})
             except AttributeError:
-                list_of_products.append({'title': title, 'price': price, 'url': url})
-        print(len(list_of_products))
-        return list_of_products
-    except AttributeError:
-        return
+                self.list_of_products.append({'title': title, 'price': price, 'url': url})
 
 
 def main():
-    result = get_cards()
-    for res in result:
-        pprint(res)
+    p = ParserPage(link='https://e-dostavka.by/catalog/7998.html')
+    p.get_page()
+    result = p.list_of_products
+    pprint(result)
 
 
 if __name__ == '__main__':

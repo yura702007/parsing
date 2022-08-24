@@ -1,15 +1,22 @@
+from pprint import pprint
+
 from parser_links import get_links
-from get_response import get_response
+from parser_data import ParserPage
 
 
 def following_links():
+    """
+    получение данных о товарах по категориям
+    :yield: dict_of_products
+    """
     for title, link in get_links().items():
-        yield {'title_category': title, 'response': get_response(url=link)}
+        page = ParserPage(category=title, link=link)
+        page.get_page()
+        yield page.dict_of_products
 
 
 def main():
-    for title, answer in following_links():
-        print(f'Категория - {title}, статус ответа - {answer.status_code}')
+    pprint(next(following_links()))
 
 
 if __name__ == '__main__':

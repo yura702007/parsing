@@ -6,6 +6,9 @@ from settings import URL
 
 
 class ParserPage:
+    """
+    Извлечение данных о товаре
+    """
     def __init__(self, category, link):
         self.url = link
         self.list_of_products = []
@@ -13,11 +16,17 @@ class ParserPage:
         self.block = None
 
     def get_page(self):
+        """
+        Получение ответа от страницы
+        """
         url = self.url
         resp = get_response(url=url)
         self.parse_page(resp.text)
 
     def parse_page(self, page_code):
+        """
+        Парсинг страницы
+        """
         soup = BeautifulSoup(page_code, features='lxml')
         self.block = soup.find('div', class_='products_block__wrapper products_4_columns vertical')
         self.parse_info()
@@ -29,11 +38,17 @@ class ParserPage:
             self.give_url(next_page)
 
     def give_url(self, tag):
+        """
+        Получение ссылок навигации по странице
+        """
         link = tag.get('href').split('/')[-1]
         self.url = URL + link
         self.get_page()
 
     def parse_info(self):
+        """
+        Сохранение данных о товаре
+        """
         cards = self.block.find_all('div', class_='form_wrapper')
         for card in cards:
             title = card.find('div', class_='title').text.strip()

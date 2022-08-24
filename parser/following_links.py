@@ -1,4 +1,4 @@
-from parser.parser_links import get_links
+from parser_links import get_links
 from get_response import get_response
 
 

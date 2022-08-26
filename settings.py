@@ -1,4 +1,4 @@
-URL = 'https://e-dostavka.by/catalog/'
+URL = 'https://e-dostavka.by'
 HEADERS = {
     "Accept": "application/json",
     "Accept-Encoding": "gzip, deflate",

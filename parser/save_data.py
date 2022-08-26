@@ -1,15 +1,22 @@
-from following_links import following_links
 import csv
+from datetime import date
+from pathlib import Path
 
 
-def create_csv_file():
-    for data_dict in following_links():
-        title = give_title(_dict=data_dict)
-        headers = give_headers(_list=data_dict[title])
+def create_csv_file(data_dict):
+    title = give_title(_dict=data_dict)
+    headers = give_headers(_list=data_dict[title])
+    if headers:
+        today_dir_name = date.today()
+        try:
+            path = Path('..', 'data_files', f'{today_dir_name}')
+            path.mkdir(parents=True)
+        except FileExistsError:
+            pass
+        file = Path('..', 'data_files', f'{today_dir_name}', f'{title}.csv')
         data = data_dict[title]
-        path = f'{title}.csv'
-        with open(path, 'w', encoding='utf8') as file:
-            writer = csv.DictWriter(file, fieldnames=headers)
+        with open(file, 'w', encoding='utf8') as ff:
+            writer = csv.DictWriter(ff, fieldnames=headers)
             writer.writeheader()
             for row in data:
                 writer.writerow(row)
@@ -20,11 +27,18 @@ def give_title(_dict):
 
 
 def give_headers(_list):
-    return list(_list[0])
+    try:
+        return list(_list[0])
+    except IndexError:
+        return
 
 
 def main():
-    create_csv_file()
+    from parser_data import ParserPage
+    p = ParserPage()
+    p.get_page()
+    result = p.dict_of_products
+    create_csv_file(data_dict=result)
 
 
 if __name__ == '__main__':

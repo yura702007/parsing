@@ -9,48 +9,62 @@ class ParserPage:
     """
     Извлечение данных о товаре
     """
-    def __init__(self, category, link):
+
+    def __init__(self, category='Для детей и младенцев', link='https://e-dostavka.by/catalog/8008.html'):
         self.url = link
         self.list_of_products = []
         self.dict_of_products = {category: self.list_of_products}
-        self.block = None
 
     def get_page(self):
         """
         Получение ответа от страницы
         """
-        url = self.url
-        resp = get_response(url=url)
-        self.parse_page(resp.text)
+        while self.url:
+            resp = get_response(url=self.url)
+            self.give_html_code(page_code=resp.text)
 
-    def parse_page(self, page_code):
+    def give_html_code(self, page_code):
         """
-        Парсинг страницы
+        Получение исходного кода страницы
         """
         soup = BeautifulSoup(page_code, features='lxml')
-        self.block = soup.find('div', class_='products_block__wrapper products_4_columns vertical')
-        self.parse_info()
-        more_cards = soup.find('a', class_='show_more')
-        if more_cards:
-            self.give_url(more_cards)
-        next_page = soup.find('a', class_='next_page_link')
-        if next_page:
-            self.give_url(next_page)
+        block = soup.find('div', class_='products_block__wrapper products_4_columns vertical')
+        self.parse_info(block=block)
+        self.set_url(block=block)
 
-    def give_url(self, tag):
+    def set_url(self, block):
         """
-        Получение ссылок навигации по странице
+        Перезагрузка url
+        :param block: bs4.BeautifulSoup
+        :return: url
         """
-        link = tag.get('href').split('/')[-1]
-        self.url = URL + link
-        self.get_page()
+        try:
+            more_cards = block.find('a', class_='show_more')
+            if more_cards:
+                self.url = self.give_url(more_cards)
+                return
+            next_page = block.find('a', class_='next_page_link')
+            self.url = self.give_url(next_page)
+            return
+        except AttributeError:
+            return
 
-    def parse_info(self):
+    @staticmethod
+    def give_url(tag):
+        """
+        Получение ссылок перехода по странице
+        """
+        if tag:
+            link = tag.get('href')
+            return URL + link
+        return
+
+    def parse_info(self, block):
         """
         Сохранение данных о товаре
         """
-        cards = self.block.find_all('div', class_='form_wrapper')
         try:
+            cards = block.find_all('div', class_='form_wrapper')
             for card in cards:
                 title = card.find('div', class_='title').text.strip()
                 price = card.find('div', class_='price').text.strip()
@@ -58,15 +72,18 @@ class ParserPage:
                 try:
                     country = card.find('div', class_='small_country').text.strip()
                     self.list_of_products.append(
-                        {'title': title, 'price': price, 'country': country.strip(), 'url': url})
+                        {'title': title, 'price': price, 'country': country.strip(), 'url': url}
+                    )
                 except AttributeError:
-                    self.list_of_products.append({'title': title, 'price': price, 'country': None, 'url': url})
+                    self.list_of_products.append(
+                        {'title': title, 'price': price, 'country': None, 'url': url}
+                    )
         except AttributeError:
             pass
 
 
 def main():
-    p = ParserPage(category='Овощи и фрукты', link='https://e-dostavka.by/catalog/7998.html')
+    p = ParserPage()
     p.get_page()
     result = p.dict_of_products
     pprint(result)

@@ -2,7 +2,7 @@ from pprint import pprint
 
 from get_response import get_response
 from bs4 import BeautifulSoup
-from settings import URL
+from config import URL
 
 
 class ParserPage:

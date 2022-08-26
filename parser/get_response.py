@@ -1,5 +1,5 @@
 import requests
-from settings import URL, HEADERS
+from config import URL, HEADERS
 
 
 def get_response(url=URL, headers=HEADERS):
